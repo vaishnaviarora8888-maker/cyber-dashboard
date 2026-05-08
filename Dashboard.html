@@ -1,216 +1,243 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cyber Dashboard</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-<style>
+  <title>Cyber Dashboard</title>
 
-body{
-    margin:0;
-    padding:0;
-    font-family: Arial;
-    background-image:url('https://images.unsplash.com/photo-1518770660439-4636190af475');
-    background-size:cover;
-    background-position:center;
-    height:100vh;
-    color:white;
-}
+  <style>
 
-.overlay{
-    width:100%;
-    height:100vh;
-    background:rgba(0,0,0,0.6);
-    padding-top:80px;
-}
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:Arial;
+    }
 
-.search-box{
-    width:100%;
-    text-align:center;
-    margin-bottom:40px;
-}
+    body{
+      background:url("https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=2070&auto=format&fit=crop");
+      background-size:cover;
+      background-position:center;
+      background-repeat:no-repeat;
+      min-height:100vh;
+      padding:40px;
+      color:white;
+    }
 
-.search-box input{
-    width:350px;
-    padding:15px;
-    font-size:20px;
-    border:none;
-    outline:none;
-}
+    .top-bar{
+      width:100%;
+      display:flex;
+      justify-content:flex-end;
+      margin-bottom:30px;
+    }
 
-.search-box button{
-    padding:15px 30px;
-    font-size:20px;
-    border:none;
-    background:#ff4d4d;
-    color:white;
-    cursor:pointer;
-}
+    .logout-btn{
+      padding:12px 25px;
+      background:#ff3b3b;
+      border:none;
+      color:white;
+      font-size:18px;
+      cursor:pointer;
+      border-radius:5px;
+    }
 
-.search-box button:hover{
-    background:red;
-}
+    .search-box{
+      width:100%;
+      display:flex;
+      justify-content:center;
+      margin-bottom:40px;
+    }
 
-table{
-    width:90%;
-    margin:auto;
-    border-collapse:collapse;
-    background:rgba(0,0,0,0.5);
-}
+    .search-box input{
+      width:400px;
+      padding:18px;
+      border:none;
+      outline:none;
+      font-size:22px;
+      background:white;
+      color:black;
+    }
 
-th{
-    color:red;
-    font-size:18px;
-    padding:15px;
-    border:1px solid white;
-}
+    .search-box button{
+      padding:18px 35px;
+      border:none;
+      background:#ff3b3b;
+      color:white;
+      font-size:22px;
+      cursor:pointer;
+    }
 
-td{
-    color:white;
-    padding:12px;
-    border:1px solid white;
-    text-align:center;
-}
+    table{
+      width:100%;
+      border-collapse:collapse;
+      background:rgba(0,0,0,0.6);
+      backdrop-filter:blur(4px);
+    }
 
-.logout{
-    position:absolute;
-    top:20px;
-    right:30px;
-}
+    th{
+      color:red;
+      padding:18px;
+      border:1px solid white;
+      font-size:28px;
+    }
 
-.logout button{
-    padding:10px 20px;
-    border:none;
-    background:#ff4d4d;
-    color:white;
-    font-size:18px;
-    cursor:pointer;
-}
+    td{
+      padding:16px;
+      border:1px solid white;
+      text-align:center;
+      font-size:20px;
+      color:white;
+    }
 
-.logout button:hover{
-    background:red;
-}
+    tr:hover{
+      background:rgba(255,255,255,0.1);
+    }
 
-</style>
+    @media(max-width:900px){
+
+      .search-box{
+        flex-direction:column;
+        align-items:center;
+      }
+
+      .search-box input{
+        width:90%;
+      }
+
+      .search-box button{
+        width:90%;
+        margin-top:10px;
+      }
+
+      table{
+        font-size:12px;
+      }
+
+    }
+
+  </style>
+
 </head>
 
 <body>
 
-<div class="overlay">
+  <div class="top-bar">
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
 
-<div class="logout">
-<button onclick="logout()">Logout</button>
-</div>
+  <div class="search-box">
 
-<div class="search-box">
+    <input
+      type="text"
+      id="search"
+      placeholder="Search number, name, email"
+    />
 
-<input type="text" id="searchInput" placeholder="Search number, name, email">
+    <button onclick="searchData()">
+      Search
+    </button>
 
-<button onclick="searchData()">Search</button>
+  </div>
 
-</div>
+  <table>
 
-<table>
+    <thead>
 
-<thead>
-<tr>
-<th>ID</th>
-<th>Name</th>
-<th>Father Name</th>
-<th>Mobile No.</th>
-<th>Alternate No.</th>
-<th>Local Address</th>
-<th>Email</th>
-<th>EID</th>
-</tr>
-</thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Father Name</th>
+        <th>Mobile No.</th>
+        <th>Alternate No.</th>
+        <th>Local Address</th>
+        <th>Email</th>
+        <th>EID</th>
+      </tr>
 
-<tbody id="resultBody">
+    </thead>
 
-</tbody>
+    <tbody id="result">
 
-</table>
+    </tbody>
 
-</div>
+  </table>
 
-<script>
+  <script>
 
-async function searchData() {
+    async function searchData() {
 
-    const q = document.getElementById("searchInput").value.trim();
+      const query = document.getElementById("search").value;
 
-    if (!q) {
-        alert("Enter Number, Name or Email");
+      if (!query) {
+
+        alert("Enter number or name");
         return;
-    }
 
-    const tbody = document.getElementById("resultBody");
+      }
 
-    tbody.innerHTML = `
-        <tr>
-            <td colspan="8">Searching...</td>
-        </tr>
-    `;
+      try {
 
-    try {
-
-        const response = await fetch(`http://localhost:5000/search?q=${q}`);
+        const response = await fetch(
+          `https://cyber-dashboard-y7u8.onrender.com/search?q=${query}`
+        );
 
         const data = await response.json();
 
-        tbody.innerHTML = "";
+        let output = "";
 
         if (data.length === 0) {
 
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="8">No Data Found</td>
-                </tr>
+          output = `
+            <tr>
+              <td colspan="8">No Data Found</td>
+            </tr>
+          `;
+
+        } else {
+
+          data.forEach((user, index) => {
+
+            output += `
+              <tr>
+                <td>${index + 1}</td>
+                <td>${user.name || ""}</td>
+                <td>${user.fname || ""}</td>
+                <td>${user.mobile || ""}</td>
+                <td>${user.alt || ""}</td>
+                <td>${user.address || ""}</td>
+                <td>${user.email || ""}</td>
+                <td>${user.id || ""}</td>
+              </tr>
             `;
 
-            return;
+          });
+
         }
 
-        data.forEach((item, index) => {
+        document.getElementById("result").innerHTML = output;
 
-            tbody.innerHTML += `
-            
-            <tr>
-                <td>${index + 1}</td>
-                <td>${item.name || ""}</td>
-                <td>${item.fname || ""}</td>
-                <td>${item.mobile || ""}</td>
-                <td>${item.alt || ""}</td>
-                <td>${item.address || ""}</td>
-                <td>${item.email || ""}</td>
-                <td>${item.id || ""}</td>
-            </tr>
-
-            `;
-
-        });
-
-    } catch (error) {
+      } catch (error) {
 
         console.log(error);
 
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="8">Server Error</td>
-            </tr>
+        document.getElementById("result").innerHTML = `
+          <tr>
+            <td colspan="8">Server Error</td>
+          </tr>
         `;
+
+      }
+
     }
 
-}
+    function logout(){
 
-function logout(){
+      window.location.href = "Index.html";
 
-    window.location.href = "index.html";
+    }
 
-}
-
-</script>
+  </script>
 
 </body>
 </html>
