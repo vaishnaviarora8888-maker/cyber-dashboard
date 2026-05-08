@@ -1,90 +1,90 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const path = require("path");
+require("dotenv").config();
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-/* =========================
-   MONGODB CONNECTION
-========================= */
+/* STATIC FILES */
 
-mongoose.connect("mongodb://127.0.0.1:27017/userdata")
+app.use(express.static(__dirname));
+
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "Index.html"));
+});
+
+app.get("/dashboard", (req, res) => {
+  res.sendFile(path.join(__dirname, "Dashboard.html"));
+});
+
+/* MONGODB CONNECTION */
+
+mongoose.connect(process.env.MONGO_URI)
 .then(() => {
-    console.log("✅ MongoDB Connected Successfully");
+  console.log("MongoDB Connected");
 })
 .catch((err) => {
-    console.log("❌ MongoDB Connection Error:", err);
+  console.log(err);
 });
 
-/* =========================
-   USER SCHEMA
-========================= */
+/* SCHEMA */
 
-const userSchema = new mongoose.Schema({
-    oid: String,
-    mobile: String,
-    name: String,
-    fname: String,
-    address: String,
-    alt: String,
-    circle: String,
-    id: String,
-    email: String
+const UserSchema = new mongoose.Schema({
+
+  mobile: String,
+  name: String,
+  fname: String,
+  address: String,
+  alt: String,
+  email: String,
+  id: String
+
 });
 
-/* =========================
-   COLLECTION NAME
-========================= */
+const User = mongoose.model("users", UserSchema);
 
-const User = mongoose.model("User", userSchema, "users");
-
-/* =========================
-   SEARCH API
-========================= */
+/* SEARCH API */
 
 app.get("/search", async (req, res) => {
 
-    const q = (req.query.q || "").trim();
+  try {
 
-    try {
+    const q = req.query.q;
 
-        const data = await User.find({
-            $or: [
-                { mobile: { $regex: q, $options: "i" } },
-                { name: { $regex: q, $options: "i" } },
-                { fname: { $regex: q, $options: "i" } },
-                { address: { $regex: q, $options: "i" } },
-                { alt: { $regex: q, $options: "i" } },
-                { email: { $regex: q, $options: "i" } },
-                { id: { $regex: q, $options: "i" } },
-                { circle: { $regex: q, $options: "i" } }
-            ]
-        }).limit(100);
+    const data = await User.find({
 
-        console.log("Search:", q);
-        console.log("Results:", data.length);
+      $or: [
 
-        res.json(data);
+        { mobile: { $regex: q, $options: "i" } },
+        { name: { $regex: q, $options: "i" } },
+        { email: { $regex: q, $options: "i" } }
 
-    } catch (error) {
+      ]
 
-        console.log("❌ Search Error:", error);
+    }).limit(50);
 
-        res.status(500).json({
-            message: "Server Error"
-        });
+    res.json(data);
 
-    }
+  } catch (error) {
+
+    console.log(error);
+
+    res.status(500).send("Server Error");
+
+  }
 
 });
 
-/* =========================
-   SERVER START
-========================= */
+/* SERVER */
 
-app.listen(5000, () => {
-    console.log("🚀 Server Running On Port 5000");
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+
+  console.log(`Server Running On Port ${PORT}`);
+
 });
