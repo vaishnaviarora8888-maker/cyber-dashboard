@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login System</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      background: url("https://images.unsplash.com/photo-1550751827-4bd374c3f58b");
+      background-size: cover;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .box {
+      background: rgba(0,0,0,0.75);
+      padding: 25px;
+      border-radius: 10px;
+      color: white;
+      width: 300px;
+      text-align: center;
+    }
+
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 5px;
+    }
+
+    button {
+      background: #00c6ff;
+      color: white;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="box">
+  <h2>Login</h2>
+
+  <input type="text" id="user" placeholder="Username">
+  <input type="password" id="pass" placeholder="Password">
+
+  <button onclick="login()">Login</button>
+
+  <p id="msg"></p>
+</div>
+
+<script>
+// ✅ DEFAULT ADMIN CREATE
+let users = JSON.parse(localStorage.getItem("users")) || {};
+
+if (!users["admin"]) {
+  users["admin"] = "1234";
+  localStorage.setItem("users", JSON.stringify(users));
+}
+
+// ✅ LOGIN
+function login() {
+  let u = document.getElementById("user").value.trim();
+  let p = document.getElementById("pass").value.trim();
+
+  let users = JSON.parse(localStorage.getItem("users")) || {};
+
+  if (users[u] && users[u] === p) {
+    localStorage.setItem("currentUser", u);
+    window.location.href = "dashboard.html";
+  } else {
+    document.getElementById("msg").innerText = "Wrong Login ❌";
+  }
+}
+</script>
+
+</body>
+</html>
