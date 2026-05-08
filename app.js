@@ -53,13 +53,13 @@ mongoose.connect(process.env.MONGO_URI)
 
 const UserSchema = new mongoose.Schema({
 
-  mobile: String,
+  mobile: mongoose.Schema.Types.Mixed,
   name: String,
   fname: String,
   address: String,
-  alt: String,
+  alt: mongoose.Schema.Types.Mixed,
   email: String,
-  id: String
+  id: mongoose.Schema.Types.Mixed
 
 });
 
@@ -71,25 +71,148 @@ app.get("/search", async (req, res) => {
 
   try {
 
-    const q = req.query.q;
+    const q = String(req.query.q || "").trim();
 
-    const data = await User.find({
+    if (!q) {
 
-      $or: [
+      return res.json([]);
 
-        { mobile: { $regex: q, $options: "i" } },
-        { name: { $regex: q, $options: "i" } },
-        { email: { $regex: q, $options: "i" } }
+    }
 
-      ]
+    const data = await User.aggregate([
 
-    }).limit(50);
+      {
+
+        $match: {
+
+          $or: [
+
+            {
+
+              name: {
+
+                $regex: q,
+                $options: "i"
+
+              }
+
+            },
+
+            {
+
+              fname: {
+
+                $regex: q,
+                $options: "i"
+
+              }
+
+            },
+
+            {
+
+              address: {
+
+                $regex: q,
+                $options: "i"
+
+              }
+
+            },
+
+            {
+
+              email: {
+
+                $regex: q,
+                $options: "i"
+
+              }
+
+            },
+
+            {
+
+              $expr: {
+
+                $regexMatch: {
+
+                  input: {
+
+                    $toString: "$mobile"
+
+                  },
+
+                  regex: q,
+                  options: "i"
+
+                }
+
+              }
+
+            },
+
+            {
+
+              $expr: {
+
+                $regexMatch: {
+
+                  input: {
+
+                    $toString: "$alt"
+
+                  },
+
+                  regex: q,
+                  options: "i"
+
+                }
+
+              }
+
+            },
+
+            {
+
+              $expr: {
+
+                $regexMatch: {
+
+                  input: {
+
+                    $toString: "$id"
+
+                  },
+
+                  regex: q,
+                  options: "i"
+
+                }
+
+              }
+
+            }
+
+          ]
+
+        }
+
+      },
+
+      {
+
+        $limit: 50
+
+      }
+
+    ]);
 
     res.json(data);
 
   } catch (error) {
 
-    console.log(error);
+    console.log("SEARCH ERROR:", error);
 
     res.status(500).send("Server Error");
 
