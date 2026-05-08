@@ -6,16 +6,27 @@ require("dotenv").config();
 
 const app = express();
 
+/* =========================
+   MIDDLEWARE
+========================= */
+
 app.use(cors());
 app.use(express.json());
-
-/* STATIC FILES */
-
 app.use(express.static(__dirname));
 
-/* ROUTES */
+/* =========================
+   ROUTES
+========================= */
 
 app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "Index.html"));
+});
+
+app.get("/index.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "Index.html"));
+});
+
+app.get("/Index.html", (req, res) => {
   res.sendFile(path.join(__dirname, "Index.html"));
 });
 
@@ -31,25 +42,30 @@ app.get("/Dashboard.html", (req, res) => {
   res.sendFile(path.join(__dirname, "Dashboard.html"));
 });
 
-app.get("/index.html", (req, res) => {
-  res.sendFile(path.join(__dirname, "Index.html"));
-});
+/* =========================
+   MONGODB CONNECTION
+========================= */
 
-app.get("/Index.html", (req, res) => {
-  res.sendFile(path.join(__dirname, "Index.html"));
-});
-
-/* MONGODB CONNECTION */
-
-mongoose.connect(process.env.MONGO_URI)
-.then(() => {
-  console.log("MongoDB Connected");
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
 })
+
+.then(() => {
+
+  console.log("MongoDB Connected");
+
+})
+
 .catch((err) => {
-  console.log(err);
+
+  console.log("MongoDB Error:", err);
+
 });
 
-/* SCHEMA */
+/* =========================
+   SCHEMA
+========================= */
 
 const UserSchema = new mongoose.Schema({
 
@@ -65,7 +81,9 @@ const UserSchema = new mongoose.Schema({
 
 const User = mongoose.model("users", UserSchema);
 
-/* SEARCH API */
+/* =========================
+   SEARCH API
+========================= */
 
 app.get("/search", async (req, res) => {
 
@@ -83,13 +101,91 @@ app.get("/search", async (req, res) => {
 
       {
 
+        $addFields: {
+
+          mobileText: {
+
+            $toString: {
+
+              $ifNull: ["$mobile", ""]
+
+            }
+
+          },
+
+          altText: {
+
+            $toString: {
+
+              $ifNull: ["$alt", ""]
+
+            }
+
+          },
+
+          idText: {
+
+            $toString: {
+
+              $ifNull: ["$id", ""]
+
+            }
+
+          },
+
+          nameText: {
+
+            $toString: {
+
+              $ifNull: ["$name", ""]
+
+            }
+
+          },
+
+          fnameText: {
+
+            $toString: {
+
+              $ifNull: ["$fname", ""]
+
+            }
+
+          },
+
+          addressText: {
+
+            $toString: {
+
+              $ifNull: ["$address", ""]
+
+            }
+
+          },
+
+          emailText: {
+
+            $toString: {
+
+              $ifNull: ["$email", ""]
+
+            }
+
+          }
+
+        }
+
+      },
+
+      {
+
         $match: {
 
           $or: [
 
             {
 
-              name: {
+              mobileText: {
 
                 $regex: q,
                 $options: "i"
@@ -100,7 +196,7 @@ app.get("/search", async (req, res) => {
 
             {
 
-              fname: {
+              altText: {
 
                 $regex: q,
                 $options: "i"
@@ -111,7 +207,7 @@ app.get("/search", async (req, res) => {
 
             {
 
-              address: {
+              idText: {
 
                 $regex: q,
                 $options: "i"
@@ -122,7 +218,7 @@ app.get("/search", async (req, res) => {
 
             {
 
-              email: {
+              nameText: {
 
                 $regex: q,
                 $options: "i"
@@ -133,20 +229,10 @@ app.get("/search", async (req, res) => {
 
             {
 
-              $expr: {
+              fnameText: {
 
-                $regexMatch: {
-
-                  input: {
-
-                    $toString: "$mobile"
-
-                  },
-
-                  regex: q,
-                  options: "i"
-
-                }
+                $regex: q,
+                $options: "i"
 
               }
 
@@ -154,20 +240,10 @@ app.get("/search", async (req, res) => {
 
             {
 
-              $expr: {
+              addressText: {
 
-                $regexMatch: {
-
-                  input: {
-
-                    $toString: "$alt"
-
-                  },
-
-                  regex: q,
-                  options: "i"
-
-                }
+                $regex: q,
+                $options: "i"
 
               }
 
@@ -175,20 +251,10 @@ app.get("/search", async (req, res) => {
 
             {
 
-              $expr: {
+              emailText: {
 
-                $regexMatch: {
-
-                  input: {
-
-                    $toString: "$id"
-
-                  },
-
-                  regex: q,
-                  options: "i"
-
-                }
+                $regex: q,
+                $options: "i"
 
               }
 
@@ -214,13 +280,20 @@ app.get("/search", async (req, res) => {
 
     console.log("SEARCH ERROR:", error);
 
-    res.status(500).send("Server Error");
+    res.status(500).json({
+
+      error: "Server Error",
+      message: error.message
+
+    });
 
   }
 
 });
 
-/* SERVER */
+/* =========================
+   SERVER
+========================= */
 
 const PORT = process.env.PORT || 5000;
 
