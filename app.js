@@ -13,12 +13,30 @@ app.use(express.json());
 
 app.use(express.static(__dirname));
 
+/* ROUTES */
+
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "Index.html"));
 });
 
 app.get("/dashboard", (req, res) => {
   res.sendFile(path.join(__dirname, "Dashboard.html"));
+});
+
+app.get("/dashboard.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "Dashboard.html"));
+});
+
+app.get("/Dashboard.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "Dashboard.html"));
+});
+
+app.get("/index.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "Index.html"));
+});
+
+app.get("/Index.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "Index.html"));
 });
 
 /* MONGODB CONNECTION */
